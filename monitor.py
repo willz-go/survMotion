@@ -11,6 +11,8 @@ class CamMonitor:
      grid_color: (int, int, int) = GRID_COLOR
      img_width: int = 0
      img_height: int = 0
+     current_grid_m: int = -1
+     current_grid_n: int = -1
 
      def __init__(self) -> None:
             self.grid_color = GRID_COLOR
@@ -21,6 +23,11 @@ class CamMonitor:
          pos_x = int (x/self.grid_size)
          pos_y = int (y/self.grid_size)
          return [pos_x, pos_y]
+     
+     def paint_grid_area(self, grid_m: int, grid_n: int, img: cv2.Mat, color: (int, int, int)):
+         print(f'grid m = {grid_m} grid n = {grid_n} ')
+         cv2.rectangle(img, (grid_m*self.grid_size, grid_n*self.grid_size), (grid_m*self.grid_size + self.grid_size, grid_n*self.grid_size + self.grid_size), color, 2)
+         return img
 
      
      def calculate_grid_params(self, grid_size: int, img: cv2.Mat):
@@ -36,6 +43,8 @@ class CamMonitor:
      def handle_mouseclicks(self, event, x, y, flags, params):
         print(f'Mouse event is {event} x = {x}; y = {y}; flasg are {flags} and params are {params}')
         [grid_x, grid_y] = self.get_grid_position(x, y, self.img_width, self.img_height)
+        self.current_grid_m = grid_x
+        self.current_grid_n = grid_y
         print(f'Grid M is {grid_x} and Grid N is  {grid_y}')
         pass
 
@@ -131,10 +140,13 @@ class CamMonitor:
             print('Resized dims are :', resized_frame.shape)
 
             grid_frame = self.drawGrid(GRID_SIZE, resized_frame)
+
+            if (self.current_grid_m >= 0 and self.current_grid_n >= 0):
+                grid_frame = self.paint_grid_area(self.current_grid_m, self.current_grid_n, grid_frame, (0, 255, 0))
             
             cv2.imshow('IMG show only', grid_frame)
 
-            if cv2.waitKey(5000) == 27:
+            if cv2.waitKey(1) == 27:
                 break
 
         
